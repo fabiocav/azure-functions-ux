@@ -1,4 +1,4 @@
-import { EditModeHelper } from './../shared/Utilities/edit-mode.helper';
+﻿import { EditModeHelper } from './../shared/Utilities/edit-mode.helper';
 import { ConfigService } from './../shared/services/config.service';
 import {Component, OnInit, EventEmitter, QueryList, OnChanges, Input, SimpleChange, ViewChild, ViewChildren, OnDestroy, ElementRef, AfterViewInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
@@ -13,6 +13,7 @@ import { FunctionInfo } from '../shared/models/function-info';
 import {VfsObject} from '../shared/models/vfs-object';
 // import {FunctionDesignerComponent} from '../function-designer/function-designer.component';
 import {LogStreamingComponent} from '../log-streaming/log-streaming.component';
+import {ErrorsWarningsComponent} from '../errors-warnings/errors-warnings.component';
 import {FunctionConfig} from '../shared/models/function-config';
 import {FunctionSecrets} from '../shared/models/function-secrets';
 import {BroadcastService} from '../shared/services/broadcast.service';
@@ -48,6 +49,7 @@ export class FunctionDevComponent implements OnChanges, OnDestroy {
     @ViewChildren(BusyStateComponent) BusyStates: QueryList<BusyStateComponent>;
     @ViewChildren(MonacoEditorDirective) monacoEditors: QueryList<MonacoEditorDirective>;
     @ViewChildren(LogStreamingComponent) logStreamings: QueryList<LogStreamingComponent>;
+    @ViewChildren(ErrorsWarningsComponent) errorsWarnings: QueryList<ErrorsWarningsComponent>;
 
     @ViewChild('functionContainer') functionContainer: ElementRef;
     @ViewChild('editorContainer') editorContainer: ElementRef;
@@ -300,16 +302,35 @@ export class FunctionDevComponent implements OnChanges, OnDestroy {
         }
     }
 
+    clickBottomTab(tab: string) {
+        if (this.bottomTab === tab) {
+            this.bottomTab = "";
+            this.expandLogs = false;
+            if (this.runLogs) {
+                this.runLogs.compress();
+            }
+        } else {
+            this.bottomTab = tab;
+        }
+
+         // double resize to fix pre heigth
+        this.onResize();
+        setTimeout(() => {
+            this.onResize();
+        }, 0);
+    }
+    
     clickRightTab(tab: string) {
-        if (tab === "logs") {
-            if (this.bottomTab === tab) {
+        if (tab.startsWith("bottomTab")) {
+            var target = tab.substring("bottomTab".length);
+            if (this.bottomTab === target) {
                 this.bottomTab = "";
                 this.expandLogs = false;
                 if (this.runLogs) {
                     this.runLogs.compress();
                 }
             } else {
-                this.bottomTab = tab;
+                this.bottomTab = target;
             }
         } else {
             this.rightTab = (this.rightTab === tab) ? "" : tab;
