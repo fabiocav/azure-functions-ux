@@ -1,6 +1,10 @@
 import { ConfigService } from './../services/config.service';
 import { Directive, EventEmitter, ElementRef, Input, Output } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
+import {HostEventService} from '../services/host-event.service'
+import {HostEvent} from '../models/host-event'
+import { Subscription } from 'rxjs/Subscription';
+import {Diagnostic} from "../models/diagnostic"
 import 'rxjs/add/operator/distinctUntilChanged';
 
 import { GlobalStateService } from '../services/global-state.service';
@@ -24,8 +28,10 @@ export class MonacoEditorDirective {
     private _fileName: string;
     private _functionAppStream : Subject<FunctionApp>;
     private _functionApp : FunctionApp;
+    private _hostEventSubscription : Subscription;
 
     constructor(public elementRef: ElementRef,
+        private _hostEventService : HostEventService,
         private _globalStateService: GlobalStateService,
         private _configService : ConfigService
         ) {
@@ -40,6 +46,9 @@ export class MonacoEditorDirective {
                 this._functionApp = functionApp;
                 this.init();
             });
+        this._hostEventSubscription = _hostEventService.Events
+        .filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
+        .subscribe((d) => this.processHostEvent(d));
     }
 
     @Input('functionAppInput') set functionAppInput(functionApp: FunctionApp){
@@ -116,7 +125,15 @@ export class MonacoEditorDirective {
         }
     }
 
+    private processHostEvent(hostEvent: HostEvent) {
+        // TODO: Process our host events
 
+        // Properties:
+        let diagnostics : Diagnostic[] = hostEvent.eventData;
+
+        // TODO: Map to IMarkerData and push to Monaco
+        // diagnostics.map()
+    }
 
     public setLayout(width?: number, height?: number) {
         if (this._editor) {

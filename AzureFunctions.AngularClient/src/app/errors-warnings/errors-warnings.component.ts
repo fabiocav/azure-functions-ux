@@ -1,7 +1,7 @@
 import {Component, OnDestroy, Input, Inject, Output, EventEmitter} from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import {TranslatePipe} from '@ngx-translate/core';
-import {Diagnostic} from "./diagnostic"
+import {Diagnostic} from "../shared/models/diagnostic"
 import { FunctionInfo } from '../shared/models/function-info';
 import {UserService} from '../shared/services/user.service';
 import {FunctionContainer} from '../shared/models/function-container';
@@ -64,8 +64,8 @@ export class ErrorsWarningsComponent implements OnDestroy {
             case monaco.Severity.Warning:
                 result = "fa-exclamation-triangle severitywarning";
                 break;
-            case monaco.Severity.Warning:
-                result = "fa-info-circle severitywarning";
+            case monaco.Severity.Info:
+                result = "fa-info-circle severityinfo";
                 break;
         }
 
