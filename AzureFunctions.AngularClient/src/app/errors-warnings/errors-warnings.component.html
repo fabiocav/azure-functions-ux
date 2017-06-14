@@ -1,0 +1,22 @@
+<div class="dev-flex-column dev-full errorwarnings">
+    <table>
+        <thead>
+            <tr>
+                <th></th>
+                <th>Description</th>
+                <th>File</th>
+                <th>Line</th>
+                <th>Column</th>
+            </tr>
+        </thead>
+        <tbody>
+             <tr *ngFor="let feature of diagnostics">
+                 <td [ngClass]="getSeverityClass(feature.severity)"></td>
+                 <td>{{feature.message}}</td>
+                 <td>{{feature.source}}</td>
+                 <td>{{feature.startLineNumber}}</td>
+                 <td>{{feature.startColumn}}</td>
+             </tr>
+        </tbody>
+    </table>
+</div>

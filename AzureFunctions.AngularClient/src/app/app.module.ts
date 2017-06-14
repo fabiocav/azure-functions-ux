@@ -18,6 +18,7 @@ import { FileUploadModule } from 'ng2-file-upload';
 import { ConfigService } from './shared/services/config.service';
 import { FunctionsService } from './shared/services/functions.service';
 import { UserService } from './shared/services/user.service';
+import { HostEventService } from './shared/services/host-event.service';
 import { PortalService } from './shared/services/portal.service';
 import { BroadcastService } from './shared/services/broadcast.service';
 import { FunctionMonitorService } from './shared/services/function-monitor.service';
@@ -65,6 +66,7 @@ import { FunctionKeysComponent } from './function-keys/function-keys.component';
 import { FunctionManageComponent } from './function-manage/function-manage.component';
 import { FunctionMonitorComponent } from './function-monitor/function-monitor.component';
 import { LogStreamingComponent } from './log-streaming/log-streaming.component';
+import { ErrorsWarningsComponent } from './errors-warnings/errors-warnings.component';
 import { RadioSelectorComponent } from './radio-selector/radio-selector.component';
 import { RunHttpComponent } from './run-http/run-http.component';
 import { TableFunctionMonitorComponent } from './table-function-monitor/table-function-monitor.component';
@@ -164,6 +166,7 @@ export class AppModule {
     FunctionManageComponent,
     FunctionMonitorComponent,
     LogStreamingComponent,
+    ErrorsWarningsComponent,
     RadioSelectorComponent,
     RunHttpComponent,
     TableFunctionMonitorComponent,
@@ -225,6 +228,7 @@ export class AppModule {
     ConfigService,
     FunctionsService,
     UserService,
+    HostEventService,
     LanguageService,
     PortalService,
     BroadcastService,
