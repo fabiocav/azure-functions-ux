@@ -122,7 +122,7 @@
 
                         <div *ngIf="!bottomTab" class="bottom-bar-closed">
                             <span class="tab-label-disabled" (click)="clickBottomTab('logs')">{{ 'logStreaming_logs' | translate }}</span>
-                            <span class="tab-label-disabled" (click)="clickBottomTab('errors')">Errors and Warnings</span>
+                            <span class="tab-label-disabled" (click)="clickBottomTab('errors')">Errors and warnings</span>
                             <span style="flex-grow: 1;"></span>
                             <span style="padding-right: 10px;" class="tab-label" (click)="clickBottomTab(bottomTab || 'logs')"><i class="fa fa-chevron-up"></i></span>
                         </div>
@@ -131,7 +131,7 @@
                            <div *ngIf="bottomTab">
                               <div class="bottom-container-bar">
                                 <span [class.tab-label-selected]="bottomTab==='logs'" [class.tab-label]="bottomTab!=='logs'" (click)="clickBottomTab('logs')">{{ 'logStreaming_logs' | translate }}</span>
-                                <span [class.tab-label-selected]="bottomTab==='errors'" [class.tab-label]="bottomTab!=='errors'" (click)="clickBottomTab('errors')">Errors and Warnings</span>
+                                <span [class.tab-label-selected]="bottomTab==='errors'" [class.tab-label]="bottomTab!=='errors'" (click)="clickBottomTab('errors')">Errors and warnings</span>
                                 <span style="flex-grow: 1;"></span>
                                 <span style="padding-right: 10px;" class="tab-label" (click)="clickBottomTab(bottomTab)"><i class="fa fa-chevron-down"></i></span>
                               </div>

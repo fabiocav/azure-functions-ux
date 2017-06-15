@@ -144,7 +144,7 @@ export class MonacoEditorDirective implements OnInit{
 
     public setPosition(lineNumber: number, column: number) {
         let position : monaco.IPosition = { lineNumber, column };
-        this._editor.revealLineInCenterIfOutsideViewport( position); 
+        this._editor.revealPositionInCenterIfOutsideViewport( position); 
         this._editor.setPosition(position);
         this._editor.focus();
     }

@@ -11,7 +11,7 @@
             </tr>
         </thead>
         <tbody>
-             <tr *ngFor="let feature of diagnostics" (click)="itemClick(feature)">
+             <tr *ngFor="let feature of diagnostics" (dblclick)="itemClick(feature)">
                  <td [ngClass]="getSeverityClass(feature.severity)"></td>
                  <td>{{feature.code}}</td>
                  <td>{{feature.message}}</td>
