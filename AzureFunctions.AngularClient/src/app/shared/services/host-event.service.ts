@@ -1,17 +1,33 @@
 import {Injectable} from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs/Subscription';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 import {HostEvent} from '../models/host-event'
 import { FunctionApp } from './../../shared/function-app';
-import { Http, Headers, Response } from '@angular/http';
+import { ConfigService } from '../services/config.service';
+import { Http, Headers, Response, RequestOptions } from '@angular/http';
+import {ArmObj} from '../models/arm/arm-obj';
+import {Site} from '../models/arm/site';
+import {UserService} from '../services/user.service';
 
 @Injectable()
 export class HostEventService {
 
     private eventStream: ReplaySubject<HostEvent>;
+    private tokenSubscription : Subscription;
+    private token: string;
+    private req : XMLHttpRequest;
+    private timeouts: number[] = [];
 
-    constructor(private _http: Http) {
+    private currentPosition : number = 0;
+    private currentStream : string;
+
+    constructor(
+      private _http: Http,
+      private _userService: UserService,
+      private _configService : ConfigService) {
         this.eventStream = new ReplaySubject<HostEvent>();
+        this.tokenSubscription = this._userService.getStartupInfo().subscribe(s => this.token = s.token);
 
         Observable.timer(1, 3000)
             .map((value, index) => new HostEvent( 
@@ -23,7 +39,7 @@ export class HostEventService {
                   endColumn: 5,
                   startLineNumber: 10,
                   endLineNumber: 10,
-                  severity: monaco.Severity.Warning,
+                  severity: 3,
                   source: "run.csx"
               },
               {
@@ -33,7 +49,7 @@ export class HostEventService {
                   endColumn: 5,
                   startLineNumber: 10,
                   endLineNumber: 10,
-                  severity: monaco.Severity.Error,
+                  severity: 2,
                   source: "run.csx"
               },
               {
@@ -43,102 +59,67 @@ export class HostEventService {
                   endColumn: 5,
                   startLineNumber: 10,
                   endLineNumber: 10,
-                  severity: monaco.Severity.Info,
+                  severity: 1,
                   source: "run.csx"
               }]))
             //.concatMap((value, index) => _http.get('https://reddit.com/.json').map(r => r.json()))
             .subscribe(posts => this.eventStream.next({ id: posts.id, name: posts.name, eventData: posts.eventData }));
+
+            this.readHostEvents();
     }
 
     get Events() {
         return this.eventStream;
     }
 
-    //  private initLogs(createEmpty: boolean = true, log?: string) {
-    //     const maxCharactersInLog = 500000;
-    //     const intervalIncreaseThreshold = 1000;
-    //     const defaultInterval = 1000;
-    //     const maxInterval = 10000;
-    //     let oldLogs = '';
+     private readHostEvents(createEmpty: boolean = true, log?: string) {
+        const maxCharactersInLog = 500000;
+        const intervalIncreaseThreshold = 1000;
+        const defaultInterval = 1000;
+        const maxInterval = 10000;
+        let currentLength = '';
+        let oldLength : number;
 
-    //     var promise = new Promise<string>((resolve, reject) => {
+        var promise = new Promise<string>((resolve, reject) => {
 
-    //         if (this.xhReq) {
-    //             this.timeouts.forEach(window.clearTimeout);
-    //             this.timeouts = [];
-    //             this.log = '';
-    //             this.xhReq.abort();
-    //             this.oldLength = 0;
-    //             if (createEmpty && log) {
-    //                 this.log = oldLogs = log;
-    //                 this.oldLength = oldLogs.length;
-    //                 this.skipLength = 0;
-    //             }
-    //         }
+            if (this.req) {
+                this.timeouts.forEach(window.clearTimeout);
+                this.timeouts = [];
+                this.req.abort();
+                this.currentPosition = 0;
+            }
 
-    //         let url = `${scmUrl}/api/logstream/application/functions/structured}`;
+            //let scmUrl = "https://functiondev-facaval2.scm.azurewebsites.net"; // FunctionApp.getScmUrl(this._configService, FunctionApp. );
+            let scmUrl = FunctionApp.getScmUrl(this._configService, FunctionApp.site );
+            let url = `${scmUrl}/api/logstream/application/functions/structured}`;
             
-    //         this._http.get(url, 
+            // TODO: Spend more time investigating a cleaner way to do this...
+           this.req = new XMLHttpRequest();
+            this.req.open('GET', url, true);
+            this.req.setRequestHeader('Authorization', `Bearer ${this.token}`);
+            this.req.setRequestHeader('FunctionsPortal', '1');
+            this.req.send(null);
 
-    //         let scmUrl = this.functionInfo.functionApp.getScmUrl();
+            var callBack = () => {
+                var diff = this.req.responseText.length - this.currentPosition;
+                if (diff > 0) {
+                    resolve(null);
+                    if (this.req.responseText.length) {
+                        this.currentStream = this.req.responseText;
+                    } 
 
-    //         this.xhReq = new XMLHttpRequest();
+                    this.currentPosition += this.req.responseText.length;
+                } 
+                if (this.req.readyState === XMLHttpRequest.DONE) {
+                    this.readHostEvents();
+                } else {
+                    this.timeouts.push(window.setTimeout(callBack, defaultInterval));
+                }
+            };
+            callBack();
 
-    //         this.xhReq.open('GET', url, true);
-    //         if (this.functionInfo.functionApp.tryFunctionsScmCreds) {
-    //             this.xhReq.setRequestHeader('Authorization', `Basic ${this.functionInfo.functionApp.tryFunctionsScmCreds}`);
-    //         } else {
-    //             this.xhReq.setRequestHeader('Authorization', `Bearer ${this.token}`);
-    //         }
-    //         this.xhReq.setRequestHeader('FunctionsPortal', '1');
-    //         this.xhReq.send(null);
-    //         if (!createEmpty) {
-    //             this.functionInfo.functionApp.getOldLogs(this.functionInfo, 10000).subscribe(r => oldLogs = r);
-    //         }
+        });
 
-    //         var callBack = () => {
-    //             var diff = this.xhReq.responseText.length + oldLogs.length - this.oldLength;
-    //             if (!this.stopped && diff > 0) {
-    //                 resolve(null);
-    //                 if (this.xhReq.responseText.length > maxCharactersInLog) {
-    //                     this.log = this.xhReq.responseText.substring(this.xhReq.responseText.length - maxCharactersInLog);
-    //                 } else {
-    //                     this.log = oldLogs
-    //                         ? oldLogs + this.xhReq.responseText.substring(this.xhReq.responseText.indexOf('\n') + 1)
-    //                         : this.xhReq.responseText;
-    //                     if (this.skipLength > 0) {
-    //                         this.log = this.log.substring(this.skipLength);
-    //                     }
-    //                 }
-
-    //                 this.oldLength = this.xhReq.responseText.length + oldLogs.length;
-    //                 window.setTimeout(() => {
-    //                     var el = document.getElementById('log-stream');
-    //                     if (el) {
-    //                         el.scrollTop = el.scrollHeight;
-    //                     }
-    //                 });
-    //                 var nextInterval = diff - oldLogs.length > intervalIncreaseThreshold ? this.timerInterval + defaultInterval : this.timerInterval - defaultInterval;
-    //                 if (nextInterval < defaultInterval) {
-    //                     this.timerInterval = defaultInterval;
-    //                 } else if (nextInterval > maxInterval) {
-    //                     this.timerInterval = defaultInterval;
-    //                 } else {
-    //                     this.timerInterval = nextInterval;
-    //                 }
-    //             } else if (diff == 0) {
-    //                 this.timerInterval = defaultInterval;
-    //             }
-    //             if (this.xhReq.readyState === XMLHttpRequest.DONE) {
-    //                 this.initLogs(true, this.log);
-    //             } else {
-    //                 this.timeouts.push(window.setTimeout(callBack, this.timerInterval));
-    //             }
-    //         };
-    //         callBack();
-
-    //     });
-
-    //     return promise;
-    // }
+        return promise;
+    }
 }
