@@ -5,6 +5,8 @@ import {HostEvent} from '../models/host-event'
 import { FunctionApp } from './../../shared/function-app';
 import { Http, Headers, Response } from '@angular/http';
 
+declare var monaco;
+
 @Injectable()
 export class HostEventService {
 
@@ -20,10 +22,10 @@ export class HostEventService {
                   code: "CS000" + index,
                   message: "Some warning here " + value,
                   startColumn: 3,
-                  endColumn: 5,
+                  endColumn: 5 + value,
                   startLineNumber: 10,
                   endLineNumber: 10,
-                  severity: monaco.Severity.Warning,
+                  severity: 2,
                   source: "run.csx"
               },
               {
@@ -31,19 +33,19 @@ export class HostEventService {
                   message: "Some error here " + value,
                   startColumn: 3,
                   endColumn: 5,
-                  startLineNumber: 10,
-                  endLineNumber: 10,
-                  severity: monaco.Severity.Error,
+                  startLineNumber: 5,
+                  endLineNumber: 5,
+                  severity: 3,
                   source: "run.csx"
               },
               {
                   code: "CS000" + index,
                   message: "Some info here " + value,
                   startColumn: 3,
-                  endColumn: 5,
-                  startLineNumber: 10,
-                  endLineNumber: 10,
-                  severity: monaco.Severity.Info,
+                  endColumn: 5 + index,
+                  startLineNumber: 7,
+                  endLineNumber: 7,
+                  severity: 1,
                   source: "run.csx"
               }]))
             //.concatMap((value, index) => _http.get('https://reddit.com/.json').map(r => r.json()))
