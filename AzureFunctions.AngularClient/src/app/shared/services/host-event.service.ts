@@ -17,7 +17,7 @@ export class HostEventService {
 
         Observable.timer(1, 3000)
             .map((value, index) => new HostEvent( 
-              "codediagnostic", value.toString(),
+               value.toString(), "codediagnostic",
               [{
                   code: "CS000" + index,
                   message: "Some warning here " + value,
@@ -26,7 +26,7 @@ export class HostEventService {
                   startLineNumber: 10,
                   endLineNumber: 10,
                   severity: 2,
-                  source: "run.csx"
+                  source: "temp.csx"
               },
               {
                   code: "CS000" + index,

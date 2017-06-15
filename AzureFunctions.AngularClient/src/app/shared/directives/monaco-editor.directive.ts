@@ -10,13 +10,15 @@ import 'rxjs/add/operator/distinctUntilChanged';
 import { GlobalStateService } from '../services/global-state.service';
 import { FunctionApp } from '../function-app';
 
+import { Component, OnInit } from '@angular/core';
+
 declare var monaco;
 declare var require;
 
 @Directive({
     selector: '[monacoEditor]',
 })
-export class MonacoEditorDirective {
+export class MonacoEditorDirective implements OnInit{
     @Output() public onContentChanged: EventEmitter<string>;
     @Output() public onSave: EventEmitter<string>;
 
@@ -29,6 +31,7 @@ export class MonacoEditorDirective {
     private _functionAppStream : Subject<FunctionApp>;
     private _functionApp : FunctionApp;
     private _hostEventSubscription : Subscription;
+    private
 
     constructor(public elementRef: ElementRef,
         private _hostEventService : HostEventService,
@@ -46,8 +49,11 @@ export class MonacoEditorDirective {
                 this._functionApp = functionApp;
                 this.init();
             });
-        this._hostEventSubscription = _hostEventService.Events
-        //.filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
+    } 
+ 
+    ngOnInit(){
+         this._hostEventSubscription = this._hostEventService.Events
+        .filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
         .subscribe((d) => this.processHostEvent(d));
     }
 
@@ -61,7 +67,7 @@ export class MonacoEditorDirective {
         }
 
         if (this._editor && this._editor.getValue() === str) {
-            return;
+            return;  
         }
         this._content = str;
         if (this._editor) {
@@ -134,10 +140,11 @@ export class MonacoEditorDirective {
         // Properties:
         let diagnostics: Diagnostic[] = hostEvent.eventData;
 
+
         // TODO: Map to IMarkerData and push to Monaco        
        // let markers = diagnostics.map(diag => this.getModelMarkers(diag));
 
-        monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics);
+        monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics.filter(d => d.source === this._fileName));
     }
 
     // private getModelMarkers(diag : Diagnostic) {
