@@ -10,6 +10,8 @@ import {ArmObj} from '../models/arm/arm-obj';
 import {Site} from '../models/arm/site';
 import {UserService} from '../services/user.service';
 
+declare var monaco;
+
 @Injectable()
 export class HostEventService {
 
@@ -36,17 +38,7 @@ export class HostEventService {
                   code: "CS000" + index,
                   message: "Some warning here " + value,
                   startColumn: 3,
-                  endColumn: 5,
-                  startLineNumber: 10,
-                  endLineNumber: 10,
-                  severity: 3,
-                  source: "run.csx"
-              },
-              {
-                  code: "CS000" + index,
-                  message: "Some error here " + value,
-                  startColumn: 3,
-                  endColumn: 5,
+                  endColumn: 5 + value,
                   startLineNumber: 10,
                   endLineNumber: 10,
                   severity: 2,
@@ -54,11 +46,21 @@ export class HostEventService {
               },
               {
                   code: "CS000" + index,
-                  message: "Some info here " + value,
+                  message: "Some error here " + value,
                   startColumn: 3,
                   endColumn: 5,
-                  startLineNumber: 10,
-                  endLineNumber: 10,
+                  startLineNumber: 5,
+                  endLineNumber: 5,
+                  severity: 3,
+                  source: "run.csx"
+              },
+              {
+                  code: "CS000" + index,
+                  message: "Some info here " + value,
+                  startColumn: 3,
+                  endColumn: 5 + index,
+                  startLineNumber: 7,
+                  endLineNumber: 7,
                   severity: 1,
                   source: "run.csx"
               }]))

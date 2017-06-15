@@ -1,4 +1,4 @@
-import { ConfigService } from './../services/config.service';
+﻿import { ConfigService } from './../services/config.service';
 import { Directive, EventEmitter, ElementRef, Input, Output } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import {HostEventService} from '../services/host-event.service'
@@ -8,7 +8,7 @@ import {Diagnostic} from "../models/diagnostic"
 import 'rxjs/add/operator/distinctUntilChanged';
 
 import { GlobalStateService } from '../services/global-state.service';
-import {FunctionApp} from '../function-app';
+import { FunctionApp } from '../function-app';
 
 declare var monaco;
 declare var require;
@@ -47,7 +47,7 @@ export class MonacoEditorDirective {
                 this.init();
             });
         this._hostEventSubscription = _hostEventService.Events
-        .filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
+        //.filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
         .subscribe((d) => this.processHostEvent(d));
     }
 
@@ -79,7 +79,7 @@ export class MonacoEditorDirective {
                     readOnly: this._disabled
                 });
             }
-        }
+        }   
     }
 
     @Input('fileName') set fileName(filename: string) {
@@ -126,14 +126,32 @@ export class MonacoEditorDirective {
     }
 
     private processHostEvent(hostEvent: HostEvent) {
+        if (!this._editor) {
+            return;
+        }
         // TODO: Process our host events
 
         // Properties:
-        let diagnostics : Diagnostic[] = hostEvent.eventData;
+        let diagnostics: Diagnostic[] = hostEvent.eventData;
 
-        // TODO: Map to IMarkerData and push to Monaco
-        // diagnostics.map()
+        // TODO: Map to IMarkerData and push to Monaco        
+       // let markers = diagnostics.map(diag => this.getModelMarkers(diag));
+
+        monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics);
     }
+
+    // private getModelMarkers(diag : Diagnostic) {
+    //     return {
+    //             code: diag.code,
+    //             startLineNumber: diag.startLineNumber,
+    //             endLineNumber: diag.endLineNumber,
+    //             startColumn: diag.startColumn,
+    //             endColumn: diag.endColumn,
+    //             message: diag.message,
+    //             severity: diag.severity
+    //     };
+    // }  
+
 
     public setLayout(width?: number, height?: number) {
         if (this._editor) {
@@ -149,7 +167,7 @@ export class MonacoEditorDirective {
     private init() {
         this._globalStateService.setBusyState();
 
-        let onGotAmdLoader = () => {
+        let onGotAmdLoader = () => { 
             (<any>window).require.config({ paths: { 'vs': 'assets/monaco/min/vs' } });
             (<any>window).require(['vs/editor/editor.main'], () => {
                 let that = this;
