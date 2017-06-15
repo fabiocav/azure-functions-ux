@@ -31,41 +31,41 @@ export class HostEventService {
         this.eventStream = new ReplaySubject<HostEvent>();
         this.tokenSubscription = this._userService.getStartupInfo().subscribe(s => this.token = s.token);
 
-        Observable.timer(1, 3000)
-            .map((value, index) => new HostEvent( 
-              "codediagnostic", value.toString(),
-              [{
-                  code: "CS000" + index,
-                  message: "Some warning here " + value,
-                  startColumn: 3,
-                  endColumn: 5 + value,
-                  startLineNumber: 10,
-                  endLineNumber: 10,
-                  severity: 2,
-                  source: "run.csx"
-              },
-              {
-                  code: "CS000" + index,
-                  message: "Some error here " + value,
-                  startColumn: 3,
-                  endColumn: 5,
-                  startLineNumber: 5,
-                  endLineNumber: 5,
-                  severity: 3,
-                  source: "run.csx"
-              },
-              {
-                  code: "CS000" + index,
-                  message: "Some info here " + value,
-                  startColumn: 3,
-                  endColumn: 5 + index,
-                  startLineNumber: 7,
-                  endLineNumber: 7,
-                  severity: 1,
-                  source: "run.csx"
-              }]))
-            //.concatMap((value, index) => _http.get('https://reddit.com/.json').map(r => r.json()))
-            .subscribe(posts => this.eventStream.next({ id: posts.id, name: posts.name, eventData: posts.eventData }));
+        // Observable.timer(1, 3000)
+        //     .map((value, index) => new HostEvent(
+        //       value.toString(), "codediagnostic",
+        //       [{
+        //           code: "CS000" + index,
+        //           message: "Some warning here " + value,
+        //           startColumn: 3,
+        //           endColumn: 5 + value,
+        //           startLineNumber: 10,
+        //           endLineNumber: 10,
+        //           severity: 2,
+        //           source: "run.csx"
+        //       },
+        //       {
+        //           code: "CS000" + index,
+        //           message: "Some error here " + value,
+        //           startColumn: 3,
+        //           endColumn: 5,
+        //           startLineNumber: 5,
+        //           endLineNumber: 5,
+        //           severity: 3,
+        //           source: "run.csx"
+        //       },
+        //       {
+        //           code: "CS000" + index,
+        //           message: "Some info here " + value,
+        //           startColumn: 3,
+        //           endColumn: 5 + index,
+        //           startLineNumber: 7,
+        //           endLineNumber: 7,
+        //           severity: 1,
+        //           source: "run.csx"
+        //       }]))
+        //     //.concatMap((value, index) => _http.get('https://reddit.com/.json').map(r => r.json()))
+        //     .subscribe(posts => this.eventStream.next({ id: posts.id, name: posts.name, eventData: posts.eventData }));
 
             this.readHostEvents();
     }
@@ -93,7 +93,7 @@ export class HostEventService {
 
             //let scmUrl = "https://functiondev-facaval2.scm.azurewebsites.net"; // FunctionApp.getScmUrl(this._configService, FunctionApp. );
             let scmUrl = FunctionApp.getScmUrl(this._configService, FunctionApp.site );
-            let url = `${scmUrl}/api/logstream/application/functions/structured}`;
+            let url = `${scmUrl}/api/logstream/application/functions/structured`;
             
             // TODO: Spend more time investigating a cleaner way to do this...
            this.req = new XMLHttpRequest();
@@ -107,10 +107,15 @@ export class HostEventService {
                 if (diff > 0) {
                     resolve(null);
                     if (this.req.responseText.length) {
-                        this.currentStream = this.req.responseText;
-                    } 
+                        let newText : string = this.req.responseText.substring(this.currentPosition);
+                        let lines = newText.split('\n');
+                        
+                        lines.filter(l => l.startsWith('{'))
+                            .map(l => JSON.parse(l))
+                            .forEach(e => this.eventStream.next(e));
 
-                    this.currentPosition += this.req.responseText.length;
+                        this.currentPosition += newText.lastIndexOf('\n');
+                    } 
                 } 
                 if (this.req.readyState === XMLHttpRequest.DONE) {
                     this.readHostEvents();

@@ -36,7 +36,7 @@ export class ErrorsWarningsComponent implements OnDestroy {
         private _broadcastService: BroadcastService,
         private _globalStateService: GlobalStateService) {
         this.tokenSubscription = this._userService.getStartupInfo().subscribe(s => this.token = s.token);
-        this.hostEventSubscription = this._hostEventService.Events.subscribe((r) => { this.diagnostics = r.eventData; });
+        this.hostEventSubscription = this._hostEventService.Events.subscribe((r : any) => { this.diagnostics = r.diagnostics; });
     }
 
     ngOnDestroy() {
