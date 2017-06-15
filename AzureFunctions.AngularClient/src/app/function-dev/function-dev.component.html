@@ -145,6 +145,7 @@
                            </div>
                            <div *ngIf="bottomTab==='errors' && functionInfo" style="width:100%;padding-right:30px">
                                 <errors-warnings [functionInfo]="functionInfo"
+                                            [monacoEditor]="codeEditor"
                                             (closeClicked)="clickBottomTab('errors')"
                                             (expandClicked)="expandLogsClicked($event)">
                                 </errors-warnings>

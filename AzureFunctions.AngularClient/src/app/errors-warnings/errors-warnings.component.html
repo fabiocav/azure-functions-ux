@@ -3,6 +3,7 @@
         <thead>
             <tr>
                 <th></th>
+                <th>Code</th>
                 <th>Description</th>
                 <th>File</th>
                 <th>Line</th>
@@ -10,8 +11,9 @@
             </tr>
         </thead>
         <tbody>
-             <tr *ngFor="let feature of diagnostics">
+             <tr *ngFor="let feature of diagnostics" (click)="itemClick(feature)">
                  <td [ngClass]="getSeverityClass(feature.severity)"></td>
+                 <td>{{feature.code}}</td>
                  <td>{{feature.message}}</td>
                  <td>{{feature.source}}</td>
                  <td>{{feature.startLineNumber}}</td>

@@ -131,34 +131,23 @@ export class MonacoEditorDirective implements OnInit{
         }
     }
 
-    private processHostEvent(hostEvent: HostEvent) {
+    private processHostEvent(hostEvent) {
         if (!this._editor) {
             return;
         }
-        // TODO: Process our host events
-
-        // Properties:
-        let diagnostics: Diagnostic[] = hostEvent.eventData;
-
-
-        // TODO: Map to IMarkerData and push to Monaco        
-       // let markers = diagnostics.map(diag => this.getModelMarkers(diag));
-
-        monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics.filter(d => d.source === this._fileName));
+        let diagnostics: Diagnostic[] = hostEvent.diagnostics;
+        try {
+            monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics.filter(d => d.source === this._fileName));    
+        } catch (error) {   
+        }
     }
 
-    // private getModelMarkers(diag : Diagnostic) {
-    //     return {
-    //             code: diag.code,
-    //             startLineNumber: diag.startLineNumber,
-    //             endLineNumber: diag.endLineNumber,
-    //             startColumn: diag.startColumn,
-    //             endColumn: diag.endColumn,
-    //             message: diag.message,
-    //             severity: diag.severity
-    //     };
-    // }  
-
+    public setPosition(lineNumber: number, column: number) {
+        let position : monaco.IPosition = { lineNumber, column };
+        this._editor.revealLineInCenterIfOutsideViewport( position); 
+        this._editor.setPosition(position);
+        this._editor.focus();
+    }
 
     public setLayout(width?: number, height?: number) {
         if (this._editor) {
@@ -169,7 +158,6 @@ export class MonacoEditorDirective implements OnInit{
             });
         }
     }
-
 
     private init() {
         this._globalStateService.setBusyState();
