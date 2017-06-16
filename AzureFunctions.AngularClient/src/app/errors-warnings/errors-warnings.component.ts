@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, Input, Inject, Output, EventEmitter} from '@angular/core';
+import {Component, OnDestroy, OnInit, OnChanges, Input, Inject, Output, EventEmitter, SimpleChanges} from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
 import {TranslatePipe} from '@ngx-translate/core';
 import {Diagnostic} from "../shared/models/diagnostic"
@@ -21,12 +21,13 @@ import {MonacoEditorDirective} from '../shared/directives/monaco-editor.directiv
     templateUrl: './errors-warnings.component.html',
     styleUrls: ['./errors-warnings.component.scss', '../function-dev/function-dev.component.scss']
 })
-export class ErrorsWarningsComponent implements OnInit, OnDestroy {
+export class ErrorsWarningsComponent implements OnInit, OnChanges, OnDestroy {
     public diagnostics: any[] = [];
     private token: string;
     private tokenSubscription: Subscription;
     private hostEventSubscription: Subscription;
     private skipLength: number = 0;
+    private static functionsDiagnostics: any = {};
     @Input() functionInfo: FunctionInfo;
     @Input() monacoEditor: MonacoEditorDirective;
     @Output() closeClicked = new EventEmitter<any>();
@@ -38,11 +39,28 @@ export class ErrorsWarningsComponent implements OnInit, OnDestroy {
         private _broadcastService: BroadcastService,
         private _globalStateService: GlobalStateService) {
         this.tokenSubscription = this._userService.getStartupInfo().subscribe(s => this.token = s.token);
-        this.hostEventSubscription = this._hostEventService.Events.subscribe((r : any) => { this.diagnostics = r.diagnostics; });
+        this.hostEventSubscription = this._hostEventService.Events.retry().subscribe((r : any) => { 
+            ErrorsWarningsComponent.functionsDiagnostics[r.functionName] = r.diagnostics;
+            if (this.functionInfo.name === r.functionName) {
+                this.diagnostics = r.diagnostics; 
+                this.monacoEditor.setDiagnostics(this.diagnostics);
+            }
+        });
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (this.functionInfo && ErrorsWarningsComponent.functionsDiagnostics[this.functionInfo.name]) {
+            this.diagnostics = ErrorsWarningsComponent.functionsDiagnostics[this.functionInfo.name];
+        }
+        else {
+            this.diagnostics = [];
+        }
+
+        this.monacoEditor.setDiagnostics(this.diagnostics);
     }
 
     ngOnInit(): void {
-        this.monacoEditor.onSave.subscribe(()=> {this.diagnostics =[]});
+        this.monacoEditor.onSave.subscribe(()=> { this.diagnostics =[]});
     }
 
     ngOnDestroy() {

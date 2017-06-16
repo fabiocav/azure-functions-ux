@@ -52,9 +52,6 @@ export class MonacoEditorDirective implements OnInit{
     } 
  
     ngOnInit(){
-         this._hostEventSubscription = this._hostEventService.Events
-        .filter((hostEvent, i) => { return hostEvent.name === "codediagnostic" })
-        .subscribe((d) => this.processHostEvent(d));
     }
 
     @Input('functionAppInput') set functionAppInput(functionApp: FunctionApp){
@@ -131,17 +128,6 @@ export class MonacoEditorDirective implements OnInit{
         }
     }
 
-    private processHostEvent(hostEvent) {
-        if (!this._editor) {
-            return;
-        }
-        let diagnostics: Diagnostic[] = hostEvent.diagnostics;
-        try {
-            monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco', diagnostics.filter(d => d.source === this._fileName));    
-        } catch (error) {   
-        }
-    }
-
     public setPosition(lineNumber: number, column: number) {
         let position : monaco.IPosition = { lineNumber, column };
         this._editor.revealPositionInCenterIfOutsideViewport( position); 
@@ -156,6 +142,19 @@ export class MonacoEditorDirective implements OnInit{
                 width: width ? width : layout.width,
                 height: height ? height : layout.height,
             });
+        }
+    }
+
+    public setDiagnostics(diagnostics: Diagnostic[]){
+        if (!this._editor) {
+            return;
+        }
+        
+        try {
+            
+            monaco.editor.setModelMarkers(this._editor.getModel(), 'monaco',
+                diagnostics.filter(d =>d.source === this._fileName));
+        } catch (error) {   
         }
     }
 

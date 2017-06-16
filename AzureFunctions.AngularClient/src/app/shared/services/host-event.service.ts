@@ -31,43 +31,7 @@ export class HostEventService {
         this.eventStream = new ReplaySubject<HostEvent>();
         this.tokenSubscription = this._userService.getStartupInfo().subscribe(s => this.token = s.token);
 
-        // Observable.timer(1, 3000)
-        //     .map((value, index) => new HostEvent(
-        //       value.toString(), "codediagnostic",
-        //       [{
-        //           code: "CS000" + index,
-        //           message: "Some warning here " + value,
-        //           startColumn: 3,
-        //           endColumn: 5 + value,
-        //           startLineNumber: 10,
-        //           endLineNumber: 10,
-        //           severity: 2,
-        //           source: "run.csx"
-        //       },
-        //       {
-        //           code: "CS000" + index,
-        //           message: "Some error here " + value,
-        //           startColumn: 3,
-        //           endColumn: 5,
-        //           startLineNumber: 5,
-        //           endLineNumber: 5,
-        //           severity: 3,
-        //           source: "run.csx"
-        //       },
-        //       {
-        //           code: "CS000" + index,
-        //           message: "Some info here " + value,
-        //           startColumn: 3,
-        //           endColumn: 5 + index,
-        //           startLineNumber: 7,
-        //           endLineNumber: 7,
-        //           severity: 1,
-        //           source: "run.csx"
-        //       }]))
-        //     //.concatMap((value, index) => _http.get('https://reddit.com/.json').map(r => r.json()))
-        //     .subscribe(posts => this.eventStream.next({ id: posts.id, name: posts.name, eventData: posts.eventData }));
-
-            this.readHostEvents();
+        this.readHostEvents();
     }
 
     get Events() {
@@ -77,7 +41,7 @@ export class HostEventService {
      private readHostEvents(createEmpty: boolean = true, log?: string) {
         const maxCharactersInLog = 500000;
         const intervalIncreaseThreshold = 1000;
-        const defaultInterval = 1000;
+        const defaultInterval = 500;
         const maxInterval = 10000;
         let currentLength = '';
         let oldLength : number;
@@ -91,11 +55,11 @@ export class HostEventService {
                 this.currentPosition = 0;
             }
 
-            //let scmUrl = "https://functiondev-facaval2.scm.azurewebsites.net"; // FunctionApp.getScmUrl(this._configService, FunctionApp. );
             let scmUrl = FunctionApp.getScmUrl(this._configService, FunctionApp.site );
             let url = `${scmUrl}/api/logstream/application/functions/structured`;
             
             // TODO: Spend more time investigating a cleaner way to do this...
+            // TODO: Need to periodically refresh this connection and handle errors
            this.req = new XMLHttpRequest();
             this.req.open('GET', url, true);
             this.req.setRequestHeader('Authorization', `Bearer ${this.token}`);
