@@ -60,7 +60,10 @@ export class ErrorsWarningsComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.monacoEditor.onSave.subscribe(()=> { this.diagnostics =[]});
+        this.monacoEditor.onSave.subscribe(()=> { 
+            this.diagnostics =[]
+            this.monacoEditor.setDiagnostics(this.diagnostics);
+        });
     }
 
     ngOnDestroy() {
